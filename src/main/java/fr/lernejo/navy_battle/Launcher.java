@@ -1,35 +1,26 @@
 package fr.lernejo.navy_battle;
 
-import com.sun.net.httpserver.HttpExchange;
-import com.sun.net.httpserver.HttpContext;
-import com.sun.net.httpserver.HttpServer;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.net.InetSocketAddress;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ExecutorService;
+import org.apache.commons.validator.routines.UrlValidator;
+
+import java.io.*;
+import java.net.*;
+
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 
 public class Launcher {
-    public static void main(String[] args) throws IOException {
-        HttpServer serv = HttpServer.create(new InetSocketAddress(9876), 0);
-        HttpContext context = serv.createContext("/ping", Launcher::handleRequest);
-        ExecutorService executorService = Executors.newFixedThreadPool(1);
-        executorService.execute(new Runnable() {
-            @Override
-            public void run() {
-                System.out.println("ExecutorService");
-                serv.setExecutor(executorService);
-            }
-        });
-        executorService.shutdown();
-        serv.start();
-    }
 
-    private static void handleRequest(HttpExchange exchange) throws IOException {
-        String response = "OK";
-        exchange.sendResponseHeaders(200, response.getBytes().length);//response code and length
-        OutputStream os = exchange.getResponseBody();
-        os.write(response.getBytes());
-        os.close();
+    public static void main(String[] args) throws IOException, InterruptedException, URISyntaxException {
+        Serv ser = null;
+        try {
+            ser = new Serv(args[0]);
+            if (args.length > 1) {
+                Client client = new Client(ser, args[1]);
+                client.SeConnecterAuServ();
+            }
+        } catch (IOException | URISyntaxException e) {
+            throw e;
+        }
     }
 }
